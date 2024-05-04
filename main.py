@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from utils import get_db_collections, decument_indexing, document_querying
+from utils import get_db_collections, document_indexing, document_querying
 from typing import List
 
 app = FastAPI()
@@ -23,7 +23,7 @@ async def get_collections(vector_db: str = "chromadb"):
 
 @app.post(f"{fastapi_app_version}/document-index/")
 async def index_files(file_paths: List[str]):
-    return decument_indexing(file_paths=file_paths)
+    return document_indexing(file_paths=file_paths)
 
 
 @app.get(f"{fastapi_app_version}/document-query/")
