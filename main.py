@@ -1,8 +1,17 @@
-from fastapi import FastAPI, UploadFile
-from index_utils import get_db_collections, decument_indexing, document_querying
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from utils import get_db_collections, decument_indexing, document_querying
 from typing import List
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 fastapi_app_version = "/api/v1"
 
