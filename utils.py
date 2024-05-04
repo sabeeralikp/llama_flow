@@ -12,7 +12,6 @@ from llama_index.core import (
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.vector_stores.chroma import ChromaVectorStore
 from llama_index.core.node_parser import (
-    SentenceSplitter,
     SemanticSplitterNodeParser,
 )
 from llama_index.llms.huggingface import HuggingFaceLLM
@@ -66,7 +65,7 @@ SERVICE_CONTEXT = ServiceContext.from_defaults(
     embed_model=EMBED_MODEL, node_parser=SPLITTER, llm=LLM
 )
 
-if "default" in [collection_name["name"] for collection_name in DB.list_collections()]:
+if "default" in [collection_name.name for collection_name in DB.list_collections()]:
     CHROMA_COLLECTION = DB.get_or_create_collection("default")
 
     VECTOR_STORE = ChromaVectorStore(CHROMA_COLLECTION)
