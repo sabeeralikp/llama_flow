@@ -94,8 +94,8 @@ class BasicRagWorkflow:
                 vector_store=self.vector_store
             )
 
-    def get_db_collections(self, vector_db: str):
-        if self.vector_db == "chromadb":
+    def get_db_collections(self, vector_db_name: str):
+        if vector_db_name == "chromadb":
             return self.vector_db.list_collections()
         else:
             return HTTPException(

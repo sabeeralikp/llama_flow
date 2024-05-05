@@ -19,8 +19,8 @@ basic = BasicRagWorkflow()
 
 
 @app.get(f"{fastapi_app_version}/get-collections/")
-async def get_collections(vector_db: str = "chromadb"):
-    return basic.get_db_collections(vector_db=vector_db)
+async def get_collections(vector_db_name: str = "chromadb"):
+    return basic.get_db_collections(vector_db_name=vector_db_name)
 
 
 @app.post(f"{fastapi_app_version}/document-index/")
