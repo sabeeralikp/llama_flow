@@ -1,3 +1,4 @@
+import asyncio
 import chromadb
 import torch
 from typing import List
@@ -126,8 +127,11 @@ class BasicRagWorkflow:
             status_code=status.HTTP_201_CREATED,
         )
 
-    def document_querying(self, query_str: str):
+    async def document_querying(self, query_str: str):
         streaming_response = self.query_engine.query(query_str)
-        for text in streaming_response.response_gen:
-            print(text)
-            yield text.encode("utf-8")
+        try:
+            for text in streaming_response.response_gen:
+                yield text
+                await asyncio.sleep(0.01)
+        except Exception as e:
+            print(e)
