@@ -129,9 +129,4 @@ class BasicRagWorkflow:
 
     async def document_querying(self, query_str: str):
         streaming_response = self.query_engine.query(query_str)
-        try:
-            for text in streaming_response.response_gen:
-                yield text
-                await asyncio.sleep(0.01)
-        except Exception as e:
-            print(e)
+        return streaming_response.response_gen
