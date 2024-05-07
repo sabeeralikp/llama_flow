@@ -129,4 +129,5 @@ class BasicRagWorkflow:
     def document_querying(self, query_str: str):
         streaming_response = self.query_engine.query(query_str)
         for text in streaming_response.response_gen:
-            yield text
+            print(text)
+            yield text.encode("utf-8")
