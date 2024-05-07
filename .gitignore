@@ -1,3 +1,6 @@
+#App code path
+no_code_rag_frontend/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

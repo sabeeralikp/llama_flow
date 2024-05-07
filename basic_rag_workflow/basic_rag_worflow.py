@@ -117,7 +117,9 @@ class BasicRagWorkflow:
             service_context=self.service_context,
         )
 
-        self.query_engine = self.vector_store_index.as_query_engine()
+        self.query_engine = self.vector_store_index.as_query_engine(
+            streaming=True, similarity_top_k=5
+        )
 
         return Response(
             content="Indexing Successfully Completed",
@@ -125,4 +127,6 @@ class BasicRagWorkflow:
         )
 
     def document_querying(self, query_str: str):
-        return self.query_engine.query(query_str)
+        streaming_response = self.query_engine.query(query_str)
+        for text in streaming_response.response_gen:
+            yield text
