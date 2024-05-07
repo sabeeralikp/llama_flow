@@ -127,6 +127,6 @@ class BasicRagWorkflow:
             status_code=status.HTTP_201_CREATED,
         )
 
-    async def document_querying(self, query_str: str):
+    def document_querying(self, query_str: str):
         streaming_response = self.query_engine.query(query_str)
         return streaming_response.response_gen
