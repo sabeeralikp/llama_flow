@@ -193,6 +193,7 @@ class BasicRagWorkflow:
             self.splitter = SemanticSplitterNodeParser(
                 buffer_size=basic_settings.semantic_splitting_buffer_size,
                 breakpoint_percentile_threshold=basic_settings.semantic_splitting_breakpoint_percentile_threshold,
+                embed_model=self.embed_model,
             )
 
         if basic_settings.retriver_top_k != 5:
