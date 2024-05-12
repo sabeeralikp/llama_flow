@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile
+from fastapi import FastAPI, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from basic_rag_workflow.basic_rag_worflow import BasicRagWorkflow
@@ -50,4 +50,4 @@ async def index_files(files: List[UploadFile]):
 
 @app.get(f"{fastapi_app_version}/document-query/")
 async def get_collections(query: str):
-    StreamingResponse(basic.document_querying(query_str=query))
+    Response(basic.document_querying(query_str=query))
