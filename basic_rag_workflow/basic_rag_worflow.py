@@ -126,8 +126,8 @@ class BasicRagWorkflow:
             "load_in_4bit": True,
             "chunking_strategy": ["semantic-splitting"],
             "semantic-splitting": {
-                "buffer_size": 4,
-                "breakpoint_percentile_threshold": 98,
+                "buffer_size": 1,
+                "breakpoint_percentile_threshold": 95,
             },
             "retriver": {
                 "top-k": 5,
