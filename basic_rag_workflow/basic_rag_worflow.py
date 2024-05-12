@@ -31,7 +31,7 @@ class BasicRagWorkflow:
             device="cuda" if torch.cuda.is_available() else "cpu",
         )
 
-        self.system_prompt = "You are a Q&A assistant. Your goal is to answer questions as accurately as possible based on the instructions and context provided."
+        self.system_prompt = "You are a Q&A assistant. Your goal is to answer questions as accurately as possible based on the instructions and context provided. the answer should be only based on the given context, if no acceptable context respond as not found on given context"
 
         self.llm = HuggingFaceLLM(
             context_window=4096,
@@ -214,7 +214,7 @@ class BasicRagWorkflow:
             )
 
     def document_indexing(self, file_paths: List[str], num_workers: int = cpu_count()):
-        
+
         loader = SimpleDirectoryReader(input_files=file_paths)
         docs = loader.load_data(num_workers=num_workers)
 
