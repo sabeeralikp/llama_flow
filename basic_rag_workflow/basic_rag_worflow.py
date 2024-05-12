@@ -1,4 +1,5 @@
 import asyncio
+import aiofiles
 import chromadb
 import torch
 from typing import List
@@ -15,7 +16,7 @@ from llama_index.core.node_parser import (
     SemanticSplitterNodeParser,
 )
 from llama_index.llms.huggingface import HuggingFaceLLM
-from fastapi import HTTPException, status, Response
+from fastapi import HTTPException, status, Response, UploadFile
 
 from models import BaseRAGModel
 
@@ -213,7 +214,15 @@ class BasicRagWorkflow:
                 embed_model=self.embed_model, node_parser=self.splitter, llm=self.llm
             )
 
-    def document_indexing(self, file_paths: List[str], num_workers: int = cpu_count()):
+    async def document_indexing(
+        self, files: List[UploadFile], num_workers: int = cpu_count()
+    ):
+        file_paths = []
+        for file in files:
+            contents = await file.read()
+            async with aiofiles.open(f"data/{file.filename}", "wb") as f:
+                await f.write(contents)
+            file_paths.append(f"data/{file.filename}")
         loader = SimpleDirectoryReader(input_files=file_paths)
         docs = loader.load_data(num_workers=num_workers)
 
