@@ -37,7 +37,7 @@ async def update_basic_settings(basic_settings: BaseRAGModel):
 
 @app.post(f"{fastapi_app_version}/document-index/")
 async def index_files(files: List[UploadFile]):
-    return basic.document_indexing(file_paths=file_paths)
+    return basic.document_indexing(files=files)
 
 
 @app.get(f"{fastapi_app_version}/document-query/")
