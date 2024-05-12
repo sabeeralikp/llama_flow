@@ -25,6 +25,12 @@ class BasicRagWorkflow:
     def __init__(self):
         self.vector_db = chromadb.PersistentClient("chromadb")
 
+        self.embed_model = HuggingFaceEmbedding(
+            model_name="Snowflake/snowflake-arctic-embed-l",
+            trust_remote_code=True,
+            device="cuda" if torch.cuda.is_available() else "cpu",
+        )
+
         self.system_prompt = "You are a Q&A assistant. Your goal is to answer questions as accurately as possible based on the instructions and context provided."
 
         self.llm = HuggingFaceLLM(
