@@ -4,6 +4,7 @@ from fastapi.responses import StreamingResponse
 from basic_rag_workflow.basic_rag_worflow import BasicRagWorkflow
 from typing import List
 from models import BaseRAGModel
+import aiofiles
 
 app = FastAPI()
 
@@ -37,7 +38,14 @@ async def update_basic_settings(basic_settings: BaseRAGModel):
 
 @app.post(f"{fastapi_app_version}/document-index/")
 async def index_files(files: List[UploadFile]):
-    return basic.document_indexing(files=files)
+    file_paths = []
+    for file in files:
+        contents = await file.read()
+        async with aiofiles.open(f"data/{file.filename}", "wb") as f:
+            await f.write(contents)
+        file_paths.append(f"data/{file.filename}")
+
+    return basic.document_indexing(file_paths=file_paths)
 
 
 @app.get(f"{fastapi_app_version}/document-query/")
