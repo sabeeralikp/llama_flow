@@ -50,4 +50,4 @@ async def index_files(files: List[UploadFile]):
 
 @app.get(f"{fastapi_app_version}/document-query/")
 async def get_collections(query: str):
-    Response(basic.document_querying(query_str=query))
+    return basic.document_querying(query_str=query)
