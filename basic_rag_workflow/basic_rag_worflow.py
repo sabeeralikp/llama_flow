@@ -112,30 +112,27 @@ class BasicRagWorkflow:
             )
 
     def get_basic_settings(self):
-        return Response(
-            {
-                "vector_db": ["chromadb"],
-                "vector_db_collection": "default",
-                "embed_model_provider": ["huggingface"],
-                "embed_model": [
-                    "Snowflake/snowflake-arctic-embed-l",
-                    "BAAI/bge-small-en-v1.5",
-                    "bge-large-en-v1.5",
-                ],
-                "llm_provider": ["huggingface"],
-                "llm": ["microsoft/Phi-3-mini-128k-instruct"],
-                "load_in_4bit": True,
-                "chunking_strategy": ["semantic-splitting"],
-                "semantic-splitting": {
-                    "buffer_size": 4,
-                    "breakpoint_percentile_threshold": 98,
-                },
-                "retriver": {
-                    "top-k": 5,
-                },
+        return {
+            "vector_db": ["chromadb"],
+            "vector_db_collection": "default",
+            "embed_model_provider": ["huggingface"],
+            "embed_model": [
+                "Snowflake/snowflake-arctic-embed-l",
+                "BAAI/bge-small-en-v1.5",
+                "bge-large-en-v1.5",
+            ],
+            "llm_provider": ["huggingface"],
+            "llm": ["microsoft/Phi-3-mini-128k-instruct"],
+            "load_in_4bit": True,
+            "chunking_strategy": ["semantic-splitting"],
+            "semantic-splitting": {
+                "buffer_size": 4,
+                "breakpoint_percentile_threshold": 98,
             },
-            status_code=status.HTTP_200_OK,
-        )
+            "retriver": {
+                "top-k": 5,
+            },
+        }
 
     def update_basic_settings(self, basic_settings: BaseRAGModel):
 
