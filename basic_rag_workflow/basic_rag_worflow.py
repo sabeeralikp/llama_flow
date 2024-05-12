@@ -17,7 +17,7 @@ from llama_index.core.node_parser import (
 from llama_index.llms.huggingface import HuggingFaceLLM
 from fastapi import HTTPException, status, Response
 
-from ..models import BaseRAGModel
+from models import BaseRAGModel
 
 
 class BasicRagWorkflow:
