@@ -36,7 +36,7 @@ def get_db():
         db.close()
 
 
-def setSettings(db: Session = get_db):
+def setSettings():
     base_dict = basic.get_basic_settings()
     base_rag_model = BaseRAGModel(
         vector_db=base_dict["vector_db"][0],
@@ -53,7 +53,11 @@ def setSettings(db: Session = get_db):
         ]["breakpoint_percentile_threshold"],
         retriver_top_k=base_dict["retriver"]["top-k"],
     )
-    crud.create_base_model_settings(db=db, base_rag_settingsModel=base_rag_model)
+    db = SessionLocal()
+    try:
+        crud.create_base_model_settings(db=db, base_rag_settingsModel=base_rag_model)
+    finally:
+        db.close()
 
 
 setSettings()
