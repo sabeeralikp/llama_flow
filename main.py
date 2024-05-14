@@ -1,10 +1,13 @@
-from fastapi import FastAPI, Response, UploadFile
+from fastapi import FastAPI, Response, UploadFile, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from basic_rag_workflow.basic_rag_worflow import BasicRagWorkflow
 from typing import List
-from models import BaseRAGModel
+from schema import BaseChatBotBaseModel, BaseRAGModel
 import aiofiles
+import crud
+from database.database import SessionLocal
+from sqlalchemy.orm import Session
 
 app = FastAPI()
 
@@ -19,6 +22,15 @@ app.add_middleware(
 fastapi_app_version = "/api/v1"
 
 basic = BasicRagWorkflow()
+
+
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 @app.get(f"{fastapi_app_version}/get-collections/")
@@ -51,3 +63,13 @@ async def index_files(files: List[UploadFile]):
 @app.get(f"{fastapi_app_version}/document-query/")
 async def get_collections(query: str):
     return basic.document_querying(query_str=query)
+
+
+@app.get(f"{fastapi_app_version}/get-chatbots/")
+async def get_chatbots():
+    return crud.get_chatbots()
+
+
+@app.post(f"{fastapi_app_version}/create-chatbots/")
+async def create_chatbots(chatbot: BaseChatBotBaseModel, db: Session = Depends(get_db)):
+    return crud.create_chatbot(db=db, chatbot=chatbot)
