@@ -9,7 +9,7 @@ class BaseChatBot(Base):
     name = Column(String)
     description = Column(String)
     vector_db = Column(String)
-    collection = Column(String)
+    vector_db_collection = Column(String)
     embed_model_provider = Column(String)
     embed_model = Column(String)
     llm_provider = Column(String)

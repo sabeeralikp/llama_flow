@@ -13,7 +13,7 @@ def create_chatbot(db: Session, chatbotModel: schema.BaseChatBotCreate):
         name=chatbotModel.name,
         description=chatbotModel.description,
         vector_db=chatbotModel.vector_db,
-        collection=chatbotModel.collection,
+        vector_db_collection=chatbotModel.vector_db_collection,
         embed_model_provider=chatbotModel.embed_model_provider,
         embed_model=chatbotModel.embed_model,
         llm_provider=chatbotModel.llm_provider,
