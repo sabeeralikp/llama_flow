@@ -15,6 +15,17 @@ class BaseRAGModel(BaseModel):
     retriver_top_k: int
 
 
+class BaseRAGModelCreate(BaseRAGModel):
+    pass
+
+
+class BaseRAGModelSchema(BaseRAGModel):
+    id: int
+
+    class Config:
+        orm_mode = True
+
+
 class BaseChatBotBaseModel(BaseModel):
     name: str
     description: str

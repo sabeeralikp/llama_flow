@@ -36,6 +36,29 @@ def get_db():
         db.close()
 
 
+def setSettings(db: Session = Depends(get_db)):
+    base_dict = basic.get_basic_settings()
+    base_rag_model = BaseRAGModel(
+        vector_db=base_dict["vector_db"][0],
+        vector_db_collection=base_dict["vector_db_collection"],
+        embed_model_provider=base_dict["embed_model_provider"][0],
+        embed_model=base_dict["embed_model"][0],
+        llm_provider=base_dict["llm_provider"][0],
+        llm=base_dict["llm"][0],
+        load_in_4bit=base_dict["load_in_4bit"],
+        chunking_strategy=base_dict["chunking_strategy"][0],
+        semantic_splitting_buffer_size=base_dict["semantic-splitting"]["buffer_size"],
+        semantic_splitting_breakpoint_percentile_threshold=base_dict[
+            "semantic-splitting"
+        ]["breakpoint_percentile_threshold"],
+        retriver_top_k=base_dict["retriver"]["top-k"],
+    )
+    crud.create_base_model_settings(db=db, base_rag_settingsModel=base_rag_model)
+
+
+setSettings()
+
+
 @app.get(f"{fastapi_app_version}/get-collections/")
 async def get_collections(vector_db_name: str = "chromadb"):
     return basic.get_db_collections(vector_db_name=vector_db_name)
@@ -46,9 +69,17 @@ async def get_basic_settings():
     return basic.get_basic_settings()
 
 
+@app.get(f"{fastapi_app_version}/get-current-basic-settings/")
+async def get_current_basic_settings(db: Session = Depends(get_db)):
+    return crud.get_base_model_settings(db=db)
+
+
 @app.post(f"{fastapi_app_version}/update-basic-settings/")
-async def update_basic_settings(basic_settings: BaseRAGModel):
+async def update_basic_settings(
+    basic_settings: BaseRAGModel, db: Session = Depends(get_db)
+):
     basic.update_basic_settings(basic_settings=basic_settings)
+    return crud.create_base_model_settings(db=db, base_rag_settingsModel=basic_settings)
 
 
 @app.post(f"{fastapi_app_version}/document-index/")
