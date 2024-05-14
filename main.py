@@ -6,8 +6,11 @@ from typing import List
 from schema import BaseChatBotBaseModel, BaseRAGModel
 import aiofiles
 import crud
-from database.database import SessionLocal
+from database.database import SessionLocal, engine
 from sqlalchemy.orm import Session
+from model import chatbot
+
+chatbot.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
