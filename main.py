@@ -67,7 +67,7 @@ async def get_collections(query: str):
 
 @app.get(f"{fastapi_app_version}/get-chatbots/")
 async def get_chatbots(db: Session = Depends(get_db)):
-    return crud.get_chatbots()
+    return crud.get_chatbots(db=db)
 
 
 @app.post(f"{fastapi_app_version}/create-chatbots/")
