@@ -72,4 +72,4 @@ async def get_chatbots(db: Session = Depends(get_db)):
 
 @app.post(f"{fastapi_app_version}/create-chatbots/")
 async def create_chatbots(chatbot: BaseChatBotBaseModel, db: Session = Depends(get_db)):
-    return crud.create_chatbot(db=db, chatbot=chatbot)
+    return crud.create_chatbot(db=db, chatbotModel=chatbot)
