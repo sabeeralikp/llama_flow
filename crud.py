@@ -31,7 +31,11 @@ def create_chatbot(db: Session, chatbotModel: schema.BaseChatBotCreate):
 
 
 def get_base_model_settings(db: Session):
-    return db.query(base_rag_settings.BasicRAGSettingsModel).last()
+    return (
+        db.query(base_rag_settings.BasicRAGSettingsModel)
+        .order_by(base_rag_settings.BasicRAGSettingsModel.id.desc())
+        .first()
+    )
 
 
 def create_base_model_settings(
