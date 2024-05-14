@@ -36,7 +36,7 @@ def get_db():
         db.close()
 
 
-def setSettings(db: Session = Depends(get_db)):
+def setSettings(db: Session = get_db):
     base_dict = basic.get_basic_settings()
     base_rag_model = BaseRAGModel(
         vector_db=base_dict["vector_db"][0],
