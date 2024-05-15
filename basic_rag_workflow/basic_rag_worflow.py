@@ -173,9 +173,26 @@ class BasicRagWorkflow:
                 detail="Invalid embed_model_provider",
             )
         if basic_settings.load_in_4bit != True:
-            return HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid load_in_4bit",
+            setting_changed = True
+            self.llm = HuggingFaceLLM(
+                context_window=4096,
+                max_new_tokens=1048,
+                generate_kwargs={"temperature": 0, "do_sample": False},
+                system_prompt=self.system_prompt,
+                # query_wrapper_prompt=qa_prompt_tmpl,
+                tokenizer_name="microsoft/Phi-3-mini-128k-instruct",
+                model_name="microsoft/Phi-3-mini-128k-instruct",
+                device_map="auto" if torch.cuda.is_available() else "cpu",
+                tokenizer_kwargs={
+                    "max_length": 4096,
+                    "trust_remote_code": True,
+                },
+                # uncomment this if using CUDA to reduce memory usage
+                model_kwargs=(
+                    {
+                        "trust_remote_code": True,
+                    }
+                ),
             )
 
         # TODO: Add more Chunking Strategy
