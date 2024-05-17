@@ -128,8 +128,10 @@ class BasicRagWorkflow:
             "llm_provider": ["huggingface", "llamacpp", "ollama"],
             "huggingface_llm": [
                 "microsoft/Phi-3-mini-128k-instruct",
-                "upstage/SOLAR-10.7B-Instruct-v1.0" "Intel/neural-chat-7b-v3-3",
-                "Nexusflow/Starling-LM-7B-beta" "meta-llama/Meta-Llama-3-8B-Instruct",
+                "upstage/SOLAR-10.7B-Instruct-v1.0",
+                "Intel/neural-chat-7b-v3-3",
+                "Nexusflow/Starling-LM-7B-beta",
+                "meta-llama/Meta-Llama-3-8B-Instruct",
                 "mistralai/Mistral-7B-Instruct-v0.2",
                 "meta-llama/CodeLlama-7b-hf",
                 "google/gemma-1.1-7b-it",
