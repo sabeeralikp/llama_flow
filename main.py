@@ -44,7 +44,7 @@ def setSettings():
         embed_model_provider=base_dict["embed_model_provider"][0],
         embed_model=base_dict["embed_model"][0],
         llm_provider=base_dict["llm_provider"][0],
-        llm=base_dict["llm"][0],
+        llm=base_dict["huggingface_llm"][0],
         load_in_4bit=base_dict["load_in_4bit"],
         chunking_strategy=base_dict["chunking_strategy"][0],
         semantic_splitting_buffer_size=base_dict["semantic-splitting"]["buffer_size"],
