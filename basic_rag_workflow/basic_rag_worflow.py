@@ -153,7 +153,14 @@ class BasicRagWorkflow:
             ],
             "load_in_4bit": True,
             "load_in_8bit": False,
-            "chunking_strategy": ["semantic-splitting"],
+            "chunking_strategy": [
+                "semantic-splitting",
+                "simple-node-parser",
+                "sentence-splitting",
+                "sentence-window",
+                "token-splitting",
+                "heirarchical-splitting",
+            ],
             "semantic-splitting": {
                 "buffer_size": 1,
                 "breakpoint_percentile_threshold": 95,
