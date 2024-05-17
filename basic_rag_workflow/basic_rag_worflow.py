@@ -113,18 +113,57 @@ class BasicRagWorkflow:
 
     def get_basic_settings(self):
         return {
-            "vector_db": ["chromadb"],
+            "vector_db": ["chromadb", "waviate", "faiss", "qdrant"],
             "vector_db_collection": "default",
-            "embed_model_provider": ["huggingface"],
+            "embed_model_provider": ["huggingface", "openai", "cohere"],
             "embed_model": [
                 "Snowflake/snowflake-arctic-embed-l",
+                "Alibaba-NLP/gte-large-en-v1.5",
+                "Snowflake/snowflake-arctic-embed-m",
+                "Snowflake/snowflake-arctic-embed-m-long",
+                "WhereIsAI/UAE-Large-V1",
                 "BAAI/bge-small-en-v1.5",
-                "bge-large-en-v1.5",
+                "mixedbread-ai/mxbai-embed-large-v1",
+                "BAAI/bge-large-en-v1.5",
             ],
-            "llm_provider": ["huggingface"],
-            "llm": ["microsoft/Phi-3-mini-128k-instruct"],
+            "llm_provider": ["huggingface", "llamacpp", "ollama"],
+            "huggingface_llm": [
+                "microsoft/Phi-3-mini-128k-instruct",
+                "upstage/SOLAR-10.7B-Instruct-v1.0",
+                "Intel/neural-chat-7b-v3-3",
+                "Nexusflow/Starling-LM-7B-beta",
+                "meta-llama/Meta-Llama-3-8B-Instruct",
+                "mistralai/Mistral-7B-Instruct-v0.2",
+                "meta-llama/CodeLlama-7b-hf",
+                "google/gemma-1.1-7b-it",
+                "google/gemma-1.1-2b-it",
+            ],
+            "llama_cpp": [
+                "llama",
+                "llama2",
+                "llama3",
+            ],
+            "ollama": [
+                "llama3",
+                "phi3",
+                "mistral",
+                "neural-chat",
+                "starling-lm",
+                "codellama",
+                "gemma:2b",
+                "gemma:7b",
+                "solar",
+            ],
             "load_in_4bit": True,
-            "chunking_strategy": ["semantic-splitting"],
+            "load_in_8bit": False,
+            "chunking_strategy": [
+                "semantic-splitting",
+                "simple-node-parser",
+                "sentence-splitting",
+                "sentence-window",
+                "token-splitting",
+                "heirarchical-splitting",
+            ],
             "semantic-splitting": {
                 "buffer_size": 1,
                 "breakpoint_percentile_threshold": 95,
@@ -173,9 +212,26 @@ class BasicRagWorkflow:
                 detail="Invalid embed_model_provider",
             )
         if basic_settings.load_in_4bit != True:
-            return HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid load_in_4bit",
+            setting_changed = True
+            self.llm = HuggingFaceLLM(
+                context_window=4096,
+                max_new_tokens=1048,
+                generate_kwargs={"temperature": 0, "do_sample": False},
+                system_prompt=self.system_prompt,
+                # query_wrapper_prompt=qa_prompt_tmpl,
+                tokenizer_name="microsoft/Phi-3-mini-128k-instruct",
+                model_name="microsoft/Phi-3-mini-128k-instruct",
+                device_map="auto" if torch.cuda.is_available() else "cpu",
+                tokenizer_kwargs={
+                    "max_length": 4096,
+                    "trust_remote_code": True,
+                },
+                # uncomment this if using CUDA to reduce memory usage
+                model_kwargs=(
+                    {
+                        "trust_remote_code": True,
+                    }
+                ),
             )
 
         # TODO: Add more Chunking Strategy
