@@ -1,5 +1,7 @@
 
-# <img src="images/logo.jpg" alt="llama_flow Logo" width="64" height="64"> llama_flow
+<center><img src="images/logo.jpg" alt="llama_flow Logo" width="200" height="200"></center>
+
+# llama_flow
 
 llama_flow is a No-Code custom RAG (Retrieval-Augmented Generation) chatbot system designed for seamless integration and easy setup. The project is available on GitHub in two versions: [llama_flow](https://github.com/sabeeralikp/llama_flow) for the backend written in FastAPI, and [llama_flow_desktop](https://github.com/sabeeralikp/llama_flow_desktop) for the desktop application built with Flutter. This system is in its early development stage.
 
