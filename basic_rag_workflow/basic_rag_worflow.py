@@ -28,6 +28,7 @@ try:
     from llama_index.core import set_global_tokenizer
     from transformers import AutoTokenizer
     from urllib.request import urlretrieve
+    import os
 except ImportError:
     print("llama_cpp not installed, using HuggingFace LLM instead")
 
@@ -226,7 +227,10 @@ class BasicRagWorkflow:
             if basic_settings.llm_provider == "llamacpp":
                 if basic_settings.llm == "llama2-13b":
                     model_url = "https://huggingface.co/TheBloke/Llama-2-13B-chat-GGML/resolve/main/llama-2-13b-chat.ggmlv3.q4_0.bin"
-                    urlretrieve(model_url, f"llama_models/{model_url.split('/')[-1]}")
+                    if not os.path.exists(f"llama_models/{model_url.split('/')[-1]}"):
+                        urlretrieve(
+                            model_url, f"llama_models/{model_url.split('/')[-1]}"
+                        )
                     self.llm = LlamaCPP(
                         # You can pass in the URL to a GGML model to download it automatically
                         # model_url=model_url,
