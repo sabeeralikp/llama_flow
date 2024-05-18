@@ -1,5 +1,6 @@
 import asyncio
 import chromadb
+from basic_rag_workflow.llamacpp_model_url import llamacpp_model_url
 import torch
 from typing import List
 from multiprocessing import cpu_count
@@ -152,9 +153,9 @@ class BasicRagWorkflow:
                 "google/gemma-1.1-2b-it",
             ],
             "llama_cpp": [
-                "llama",
+                "llama2-7b",
                 "llama2-13b",
-                "llama3",
+                "llama3-8b",
             ],
             "ollama": [
                 "llama3",
@@ -225,36 +226,27 @@ class BasicRagWorkflow:
             # )
             setting_changed = True
             if basic_settings.llm_provider == "llamacpp":
-                if basic_settings.llm == "llama2-13b":
-                    model_url = "https://huggingface.co/TheBloke/Llama-2-13B-chat-GGUF/resolve/main/llama-2-13b-chat.Q4_0.gguf"
-                    # if not os.path.exists(f"llama_models/{model_url.split('/')[-1]}"):
-                    #     urlretrieve(
-                    #         model_url, f"llama_models/{model_url.split('/')[-1]}"
-                    #     )
-                    self.llm = LlamaCPP(
-                        # You can pass in the URL to a GGML model to download it automatically
-                        model_url=model_url,
-                        # optionally, you can set the path to a pre-downloaded model instead of model_url
-                        # model_path=f"llama_models/{model_url.split('/')[-1]}",
-                        temperature=0.0,
-                        max_new_tokens=1048,
-                        # llama2 has a context window of 4096 tokens, but we set it lower to allow for some wiggle room
-                        context_window=4096,
-                        # kwargs to pass to __call__()
-                        generate_kwargs={},
-                        # kwargs to pass to __init__()
-                        # set to at least 1 to use GPU
-                        model_kwargs={"n_gpu_layers": -1},
-                        # transform inputs into Llama2 format
-                        messages_to_prompt=messages_to_prompt,
-                        completion_to_prompt=completion_to_prompt,
-                        verbose=False,
-                    )
-                else:
-                    return HTTPException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        detail="Invalid llm",
-                    )
+                self.llm = LlamaCPP(
+                    # You can pass in the URL to a GGML model to download it automatically
+                    model_url=llamacpp_model_url(basic_settings.llm),
+                    # optionally, you can set the path to a pre-downloaded model instead of model_url
+                    # model_path=f"llama_models/{model_url.split('/')[-1]}",
+                    temperature=0.0,
+                    max_new_tokens=1048,
+                    # llama2 has a context window of 4096 tokens, but we set it lower to allow for some wiggle room
+                    context_window=4096,
+                    # kwargs to pass to __call__()
+                    generate_kwargs={},
+                    # kwargs to pass to __init__()
+                    # set to at least 1 to use GPU
+                    model_kwargs=(
+                        {"n_gpu_layers": -1} if torch.cuda.is_available() else {}
+                    ),
+                    # transform inputs into Llama2 format
+                    messages_to_prompt=messages_to_prompt,
+                    completion_to_prompt=completion_to_prompt,
+                    verbose=False,
+                )
                 set_global_tokenizer(
                     AutoTokenizer.from_pretrained(
                         "NousResearch/Llama-2-7b-chat-hf"
