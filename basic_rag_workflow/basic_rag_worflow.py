@@ -244,7 +244,7 @@ class BasicRagWorkflow:
                         generate_kwargs={},
                         # kwargs to pass to __init__()
                         # set to at least 1 to use GPU
-                        model_kwargs={"n_gpu_layers": 1},
+                        model_kwargs={"n_gpu_layers": -1},
                         # transform inputs into Llama2 format
                         messages_to_prompt=messages_to_prompt,
                         completion_to_prompt=completion_to_prompt,
