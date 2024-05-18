@@ -19,6 +19,17 @@ from fastapi import HTTPException, status, Response, UploadFile
 
 from schema import BaseRAGModel
 
+try:
+    from llama_index.llms.llama_cpp import LlamaCPP
+    from llama_index.llms.llama_cpp.llama_utils import (
+        messages_to_prompt,
+        completion_to_prompt,
+    )
+    from llama_index.core import set_global_tokenizer
+    from transformers import AutoTokenizer
+except ImportError:
+    print("llama_cpp not installed, using HuggingFace LLM instead")
+
 
 class BasicRagWorkflow:
 
@@ -140,7 +151,7 @@ class BasicRagWorkflow:
             ],
             "llama_cpp": [
                 "llama",
-                "llama2",
+                "llama2-13b",
                 "llama3",
             ],
             "ollama": [
@@ -195,44 +206,88 @@ class BasicRagWorkflow:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid vector_db",
             )
-        if basic_settings.embed_model != "Snowflake/snowflake-arctic-embed-l":
-            return HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid embed_model",
-            )
+        else:
+            if basic_settings.embed_model != "Snowflake/snowflake-arctic-embed-l":
+                setting_changed = True
+                self.embed_model = HuggingFaceEmbedding(
+                    model_name=basic_settings.embed_model,
+                    trust_remote_code=True,
+                    device="cuda" if torch.cuda.is_available() else "cpu",
+                )
 
         # TODO: Plug and Play different LLM Provider and its Settings and Embedding Models
-        if basic_settings.llm != "microsoft/Phi-3-mini-128k-instruct":
-            return HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid llm"
-            )
         if basic_settings.llm_provider != "huggingface":
-            return HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid embed_model_provider",
-            )
-        if basic_settings.load_in_4bit != True:
+            # return HTTPException(
+            #     status_code=status.HTTP_400_BAD_REQUEST,
+            #     detail="Invalid embed_model_provider",
+            # )
             setting_changed = True
-            self.llm = HuggingFaceLLM(
-                context_window=4096,
-                max_new_tokens=1048,
-                generate_kwargs={"temperature": 0, "do_sample": False},
-                system_prompt=self.system_prompt,
-                # query_wrapper_prompt=qa_prompt_tmpl,
-                tokenizer_name="microsoft/Phi-3-mini-128k-instruct",
-                model_name="microsoft/Phi-3-mini-128k-instruct",
-                device_map="auto" if torch.cuda.is_available() else "cpu",
-                tokenizer_kwargs={
-                    "max_length": 4096,
-                    "trust_remote_code": True,
-                },
-                # uncomment this if using CUDA to reduce memory usage
-                model_kwargs=(
-                    {
+            if basic_settings.llm_provider == "llamacpp":
+                if basic_settings.llm == "llama2-13b":
+                    model_url = "https://huggingface.co/TheBloke/Llama-2-13B-chat-GGML/resolve/main/llama-2-13b-chat.ggmlv3.q4_0.bin"
+                    self.llm = LlamaCPP(
+                        # You can pass in the URL to a GGML model to download it automatically
+                        model_url=model_url,
+                        # optionally, you can set the path to a pre-downloaded model instead of model_url
+                        model_path=None,
+                        temperature=0.0,
+                        max_new_tokens=1048,
+                        # llama2 has a context window of 4096 tokens, but we set it lower to allow for some wiggle room
+                        context_window=4096,
+                        # kwargs to pass to __call__()
+                        generate_kwargs={},
+                        # kwargs to pass to __init__()
+                        # set to at least 1 to use GPU
+                        model_kwargs={"n_gpu_layers": 1},
+                        # transform inputs into Llama2 format
+                        messages_to_prompt=messages_to_prompt,
+                        completion_to_prompt=completion_to_prompt,
+                        verbose=False,
+                    )
+                else:
+                    return HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="Invalid llm",
+                    )
+                set_global_tokenizer(
+                    AutoTokenizer.from_pretrained(
+                        "NousResearch/Llama-2-7b-chat-hf"
+                    ).encode
+                )
+        else:
+            if basic_settings.llm != "microsoft/Phi-3-mini-128k-instruct":
+                setting_changed = True
+                self.llm = HuggingFaceLLM(
+                    context_window=4096,
+                    max_new_tokens=1048,
+                    generate_kwargs={"temperature": 0, "do_sample": False},
+                    system_prompt=self.system_prompt,
+                    # query_wrapper_prompt=qa_prompt_tmpl,
+                    tokenizer_name=basic_settings.llm,
+                    model_name=basic_settings.llm,
+                    device_map="auto" if torch.cuda.is_available() else "cpu",
+                    tokenizer_kwargs={
+                        "max_length": 4096,
                         "trust_remote_code": True,
-                    }
-                ),
-            )
+                    },
+                    # uncomment this if using CUDA to reduce memory usage
+                    model_kwargs=(
+                        {
+                            "torch_dtype": torch.float16,
+                            "llm_int8_enable_fp32_cpu_offload": True,
+                            "bnb_4bit_quant_type": "nf4",
+                            "bnb_4bit_use_double_quant": True,
+                            "bnb_4bit_compute_dtype": torch.bfloat16,
+                            "load_in_4bit": True,
+                            "trust_remote_code": True,
+                        }
+                        if torch.cuda.is_available() and basic_settings.load_in_4bit
+                        else {
+                            "trust_remote_code": True,
+                        }
+                    ),
+                )
+            # if basic_settings.load_in_4bit != True:
 
         # TODO: Add more Chunking Strategy
         if basic_settings.chunking_strategy != "semantic-splitting":
