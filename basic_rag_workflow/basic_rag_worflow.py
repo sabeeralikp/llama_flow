@@ -226,7 +226,7 @@ class BasicRagWorkflow:
             setting_changed = True
             if basic_settings.llm_provider == "llamacpp":
                 if basic_settings.llm == "llama2-13b":
-                    model_url = "https://huggingface.co/TheBloke/Llama-2-13B-chat-GGML/resolve/main/llama-2-13b-chat.ggmlv3.q4_0.bin"
+                    model_url = "https://huggingface.co/TheBloke/Llama-2-13B-chat-GGUF/resolve/main/llama-2-13b-chat.Q4_0.gguf"
                     if not os.path.exists(f"llama_models/{model_url.split('/')[-1]}"):
                         urlretrieve(
                             model_url, f"llama_models/{model_url.split('/')[-1]}"
