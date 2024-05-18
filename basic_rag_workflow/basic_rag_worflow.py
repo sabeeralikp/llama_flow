@@ -227,15 +227,15 @@ class BasicRagWorkflow:
             if basic_settings.llm_provider == "llamacpp":
                 if basic_settings.llm == "llama2-13b":
                     model_url = "https://huggingface.co/TheBloke/Llama-2-13B-chat-GGUF/resolve/main/llama-2-13b-chat.Q4_0.gguf"
-                    if not os.path.exists(f"llama_models/{model_url.split('/')[-1]}"):
-                        urlretrieve(
-                            model_url, f"llama_models/{model_url.split('/')[-1]}"
-                        )
+                    # if not os.path.exists(f"llama_models/{model_url.split('/')[-1]}"):
+                    #     urlretrieve(
+                    #         model_url, f"llama_models/{model_url.split('/')[-1]}"
+                    #     )
                     self.llm = LlamaCPP(
                         # You can pass in the URL to a GGML model to download it automatically
-                        # model_url=model_url,
+                        model_url=model_url,
                         # optionally, you can set the path to a pre-downloaded model instead of model_url
-                        model_path=f"llama_models/{model_url.split('/')[-1]}",
+                        # model_path=f"llama_models/{model_url.split('/')[-1]}",
                         temperature=0.0,
                         max_new_tokens=1048,
                         # llama2 has a context window of 4096 tokens, but we set it lower to allow for some wiggle room
