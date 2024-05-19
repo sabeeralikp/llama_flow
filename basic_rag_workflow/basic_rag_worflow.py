@@ -225,10 +225,6 @@ class BasicRagWorkflow:
 
         # TODO: Plug and Play different LLM Provider and its Settings and Embedding Models
         if basic_settings.llm_provider != "huggingface":
-            # return HTTPException(
-            #     status_code=status.HTTP_400_BAD_REQUEST,
-            #     detail="Invalid embed_model_provider",
-            # )
             setting_changed = True
             if basic_settings.llm_provider == "llamacpp":
                 self.llm = LlamaCPP(
