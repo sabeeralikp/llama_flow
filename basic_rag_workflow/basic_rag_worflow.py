@@ -33,6 +33,11 @@ try:
 except ImportError:
     print("llama_cpp not installed, using HuggingFace LLM instead")
 
+try:
+    from llama_index.llms.ollama import Ollama
+except ImportError:
+    print("ollama not installed, using HuggingFace LLM instead")
+
 
 class BasicRagWorkflow:
 
@@ -252,6 +257,8 @@ class BasicRagWorkflow:
                         "NousResearch/Llama-2-7b-chat-hf"
                     ).encode
                 )
+            if basic_settings.llm_provider == "ollama":
+                self.llm = Ollama(model=basic_settings.llm, request_timeout=300.0)
         else:
             if basic_settings.llm != "microsoft/Phi-3-mini-128k-instruct":
                 setting_changed = True
