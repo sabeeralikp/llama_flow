@@ -1,0 +1,1 @@
+uv pip install -q llama-index llama-index-embeddings-huggingface chromadb llama-index-vector-stores-chroma accelerate einops bitsandbytes llama-index-llms-huggingface fastapi "uvicorn[standard]"
