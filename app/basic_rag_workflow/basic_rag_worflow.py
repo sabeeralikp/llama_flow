@@ -40,8 +40,17 @@ except ImportError:
 
 
 class BasicRagWorkflow:
-
+    """
+    BasicRagWorkflow class handles the setup and operation of a basic 
+    Retrieval-Augmented Generation (RAG) workflow using various LLMs 
+    (Large Language Models) and vector databases.
+    """
+    
     def __init__(self):
+        """
+        Initialize the BasicRagWorkflow with default settings.
+        Sets up vector database, embedding models, LLMs, and other necessary components.
+        """
         self.vector_db = chromadb.PersistentClient("chromadb")
 
         self.embed_model = HuggingFaceEmbedding(
@@ -122,6 +131,15 @@ class BasicRagWorkflow:
             )
 
     def get_db_collections(self, vector_db_name: str):
+        """
+        Retrieve the list of collections in the specified vector database.
+
+        Args:
+            vector_db_name (str): Name of the vector database.
+
+        Returns:
+            List of collections or HTTPException if the database is not found.
+        """
         if vector_db_name == "chromadb":
             return self.vector_db.list_collections()
         else:
@@ -131,6 +149,12 @@ class BasicRagWorkflow:
             )
 
     def get_basic_settings(self):
+        """
+        Get the basic settings for the RAG workflow.
+
+        Returns:
+            dict: Basic settings including vector DB, embed model, LLM provider, and more.
+        """
         return {
             "vector_db": ["chromadb", "waviate", "faiss", "qdrant"],
             "vector_db_collection": "default",
@@ -193,6 +217,15 @@ class BasicRagWorkflow:
         }
 
     def update_basic_settings(self, basic_settings: BaseRAGModel):
+        """
+        Update the basic settings for the RAG workflow.
+
+        Args:
+            basic_settings (BaseRAGModel): The updated settings.
+
+        Returns:
+            HTTPException if any invalid settings are provided.
+        """
 
         setting_changed = False
 
@@ -326,7 +359,16 @@ class BasicRagWorkflow:
             )
 
     def document_indexing(self, file_paths: List[str], num_workers: int = cpu_count()):
+        """
+        Index documents from the specified file paths.
 
+        Args:
+            file_paths (List[str]): List of file paths to be indexed.
+            num_workers (int): Number of worker processes to use for indexing.
+
+        Returns:
+            Response: A success response upon completion of indexing.
+        """
         loader = SimpleDirectoryReader(input_files=file_paths)
         docs = loader.load_data(num_workers=num_workers)
 
@@ -346,4 +388,13 @@ class BasicRagWorkflow:
         )
 
     def document_querying(self, query_str: str):
+        """
+        Query the indexed documents.
+
+        Args:
+            query_str (str): The query string.
+
+        Returns:
+            The query results.
+        """
         return self.query_engine.query(query_str)

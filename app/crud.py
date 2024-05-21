@@ -5,10 +5,29 @@ import schema
 
 
 def get_chatbots(db: Session):
+    """
+    Retrieve all chatbots from the database.
+
+    Args:
+        db (Session): The database session.
+
+    Returns:
+        List[chatbot.BaseChatBot]: A list of all chatbots in the database.
+    """
     return db.query(chatbot.BaseChatBot).all()
 
 
 def create_chatbot(db: Session, chatbotModel: schema.BaseChatBotCreate):
+    """
+    Create a new chatbot entry in the database.
+
+    Args:
+        db (Session): The database session.
+        chatbotModel (schema.BaseChatBotCreate): The schema representing the chatbot to be created.
+
+    Returns:
+        chatbot.BaseChatBot: The created chatbot instance.
+    """
     db_chatbot = chatbot.BaseChatBot(
         name=chatbotModel.name,
         description=chatbotModel.description,
@@ -31,6 +50,15 @@ def create_chatbot(db: Session, chatbotModel: schema.BaseChatBotCreate):
 
 
 def get_base_model_settings(db: Session):
+    """
+    Retrieve the most recent base model settings from the database.
+
+    Args:
+        db (Session): The database session.
+
+    Returns:
+        base_rag_settings.BasicRAGSettingsModel: The most recent base model settings.
+    """
     return (
         db.query(base_rag_settings.BasicRAGSettingsModel)
         .order_by(base_rag_settings.BasicRAGSettingsModel.id.desc())
@@ -41,6 +69,16 @@ def get_base_model_settings(db: Session):
 def create_base_model_settings(
     db: Session, base_rag_settingsModel: schema.BaseRAGModel
 ):
+    """
+    Create a new base model settings entry in the database.
+
+    Args:
+        db (Session): The database session.
+        base_rag_settingsModel (schema.BaseRAGModel): The schema representing the base model settings to be created.
+
+    Returns:
+        base_rag_settings.BasicRAGSettingsModel: The created base model settings instance.
+    """
     db_base_rag_settings = base_rag_settings.BasicRAGSettingsModel(
         vector_db=base_rag_settingsModel.vector_db,
         vector_db_collection=base_rag_settingsModel.vector_db_collection,
