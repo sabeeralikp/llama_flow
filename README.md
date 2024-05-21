@@ -9,7 +9,7 @@ llama_flow is a No-Code custom RAG (Retrieval-Augmented Generation) chatbot syst
 
 ### Desktop Version
 1. Download the desktop version from the releases section on GitHub.
-   - Note: Currently, the code only supports [Linux](https://github.com/sabeeralikp/llama_flow/releases/download/linux-desktop-1.0.1/llama_flow-1.0.1+2-linux.deb) and Windows. The MacOS build is yet to be done.
+   - Note: Currently, the code only supports [Linux](https://github.com/sabeeralikp/llama_flow/releases/download/linux-desktop-1.0.1/llama_flow-1.0.1+2-linux.deb) and [Windows](https://github.com/sabeeralikp/llama_flow/releases/download/linux-desktop-1.0.1/llama_flow-1.0.1+2-windows-setup.exe). The MacOS build is yet to be done.
 
 ### Backend Setup
 
