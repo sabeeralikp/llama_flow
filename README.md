@@ -28,7 +28,8 @@
 
 ### 🖥️ Frontend
 - Built with **[Flutter](https://flutter.dev/)**
-- Available for **[Linux](https://github.com/sabeeralikp/llama_flow/releases/download/linux-desktop-1.0.1/llama_flow-1.0.1+2-linux.deb)** and **[Windows](https://github.com/sabeeralikp/llama_flow/releases/download/linux-desktop-1.0.1/llama_flow-1.0.1+2-windows-setup.exe)**
+- Available for **[Linux](https://github.com/sabeeralikp/llama_flow/releases/download/Desktop-1.0.1/llama_flow-1.0.1+2-linux.deb)** and **[Windows](https://github.com/sabeeralikp/llama_flow/releases/download/Desktop-1.0.1/llama_flow-1.0.1+2-windows-setup.exe)**
+- Source Code: [llama_flow_desktop](https://github.com/sabeeralikp/llama_flow_desktop)
 
 ### 🛠️ Backend
 - Dockerized for local hosting
@@ -36,7 +37,7 @@
 
 ### Supported Components
 
-#### Workflow
+#### Basic RAG Workflow
 | Workflow                      | Status                    |
 |-------------------------------|---------------------------|
 | Default with [Huggingface](https://huggingface.co/)      | ✅                        |
