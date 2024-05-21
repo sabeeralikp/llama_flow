@@ -118,11 +118,11 @@
 | Chunking Strategy             | Status                    |
 |-------------------------------|---------------------------|
 | semantic-splitting            | ✅                        |
-| simple-node-parser            | ✅                        |
-| sentence-splitting            | ✅                        |
-| sentence-window               | ✅                        |
-| token-splitting               | ✅                        |
-| hierarchical-splitting        | ✅                        |
+| simple-node-parser            | ⏳                        |
+| sentence-splitting            | ⏳                        |
+| sentence-window               | ⏳                        |
+| token-splitting               | ⏳                        |
+| hierarchical-splitting        | ⏳                        |
 
 ### Planned Features
 - Advanced RAG workflow (See illustration below)
