@@ -43,11 +43,11 @@ except ImportError:
 
 class BasicRagWorkflow:
     """
-    BasicRagWorkflow class handles the setup and operation of a basic 
-    Retrieval-Augmented Generation (RAG) workflow using various LLMs 
+    BasicRagWorkflow class handles the setup and operation of a basic
+    Retrieval-Augmented Generation (RAG) workflow using various LLMs
     (Large Language Models) and vector databases.
     """
-    
+
     def __init__(self):
         """
         Initialize the BasicRagWorkflow with default settings.
@@ -171,7 +171,12 @@ class BasicRagWorkflow:
                 "mixedbread-ai/mxbai-embed-large-v1",
                 "BAAI/bge-large-en-v1.5",
             ],
-            "ollama_embed_models":["snowflake-arctic-embed","mxbai-embed-large", "nomic-embed-text", "all-minilm"],
+            "ollama_embed_models": [
+                "snowflake-arctic-embed",
+                "mxbai-embed-large",
+                "nomic-embed-text",
+                "all-minilm",
+            ],
             "llm_provider": ["huggingface", "llamacpp", "ollama"],
             "huggingface_llm": [
                 "microsoft/Phi-3-mini-128k-instruct",
@@ -255,6 +260,10 @@ class BasicRagWorkflow:
                 )
         elif basic_settings.embed_model_provider == "ollama":
             setting_changed = True
+            print(
+                "Downloading Embed model",
+                os.system(f"ollama pull {basic_settings.embed_model}"),
+            )
             self.embed_model = OllamaEmbedding(model_name=basic_settings.embed_model)
         else:
             return HTTPException(
@@ -293,7 +302,10 @@ class BasicRagWorkflow:
                     ).encode
                 )
             if basic_settings.llm_provider == "ollama":
-                print("Downloading LLM from Ollama:",os.system(f"olllama pull {basic_settings.llm}"))
+                print(
+                    "Downloading LLM from Ollama:",
+                    os.system(f"ollama pull {basic_settings.llm}"),
+                )
                 self.llm = Ollama(model=basic_settings.llm, request_timeout=300.0)
         else:
             if basic_settings.llm != "microsoft/Phi-3-mini-128k-instruct":
