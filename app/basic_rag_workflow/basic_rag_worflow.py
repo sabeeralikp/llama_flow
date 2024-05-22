@@ -35,6 +35,7 @@ except ImportError:
 
 try:
     from llama_index.llms.ollama import Ollama
+    from llama_index.embeddings.ollama import OllamaEmbedding
 except ImportError:
     print("ollama not installed, using HuggingFace LLM instead")
 
@@ -158,7 +159,7 @@ class BasicRagWorkflow:
         return {
             "vector_db": ["chromadb", "waviate", "faiss", "qdrant"],
             "vector_db_collection": "default",
-            "embed_model_provider": ["huggingface", "openai", "cohere"],
+            "embed_model_provider": ["huggingface", "ollama", "openai", "cohere"],
             "embed_model": [
                 "Snowflake/snowflake-arctic-embed-l",
                 "Alibaba-NLP/gte-large-en-v1.5",
@@ -169,6 +170,7 @@ class BasicRagWorkflow:
                 "mixedbread-ai/mxbai-embed-large-v1",
                 "BAAI/bge-large-en-v1.5",
             ],
+            "ollama_embed_models":["snowflake-arctic-embed","mxbai-embed-large", "nomic-embed-text", "all-minilm"],
             "llm_provider": ["huggingface", "llamacpp", "ollama"],
             "huggingface_llm": [
                 "microsoft/Phi-3-mini-128k-instruct",
@@ -242,12 +244,7 @@ class BasicRagWorkflow:
             )
 
         # TODO: Plug and Play different embed model Provider and Embedding Models
-        if basic_settings.embed_model_provider != "huggingface":
-            return HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid vector_db",
-            )
-        else:
+        if basic_settings.embed_model_provider == "huggingface":
             if basic_settings.embed_model != "Snowflake/snowflake-arctic-embed-l":
                 setting_changed = True
                 self.embed_model = HuggingFaceEmbedding(
@@ -255,6 +252,14 @@ class BasicRagWorkflow:
                     trust_remote_code=True,
                     device="cuda" if torch.cuda.is_available() else "cpu",
                 )
+        elif basic_settings.embed_model_provider == "ollama":
+            setting_changed = True
+            self.embed_model = OllamaEmbedding(model_name=basic_settings.embed_model)
+        else:
+            return HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid vector_db",
+            )
 
         # TODO: Plug and Play different LLM Provider and its Settings and Embedding Models
         if basic_settings.llm_provider != "huggingface":
