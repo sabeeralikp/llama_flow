@@ -19,6 +19,7 @@ from llama_index.llms.huggingface import HuggingFaceLLM
 from fastapi import HTTPException, status, Response, UploadFile
 
 from schema import BaseRAGModel
+import os
 
 try:
     from llama_index.llms.llama_cpp import LlamaCPP
@@ -292,6 +293,7 @@ class BasicRagWorkflow:
                     ).encode
                 )
             if basic_settings.llm_provider == "ollama":
+                print("Downloading LLM from Ollama:",os.system(f"olllama pull {basic_settings.llm}"))
                 self.llm = Ollama(model=basic_settings.llm, request_timeout=300.0)
         else:
             if basic_settings.llm != "microsoft/Phi-3-mini-128k-instruct":
