@@ -9,6 +9,7 @@ from llama_index.core import (
     StorageContext,
     ServiceContext,
     VectorStoreIndex,
+    Settings
 )
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.vector_stores.chroma import ChromaVectorStore
@@ -21,6 +22,9 @@ from fastapi import HTTPException, status, Response, UploadFile
 from schema import BaseRAGModel
 import os
 
+default_backend = "huggingface"
+
+# llamacpp support configuration
 try:
     from llama_index.llms.llama_cpp import LlamaCPP
     from llama_index.llms.llama_cpp.llama_utils import (
@@ -31,12 +35,17 @@ try:
     from transformers import AutoTokenizer
     from urllib.request import urlretrieve
     import os
+    default_backend = "llamacpp"
 except ImportError:
-    print("llama_cpp not installed, using HuggingFace LLM instead")
+    print("llama_cpp not installed, using other alternatives")
 
+# ollama support configuration
 try:
     from llama_index.llms.ollama import Ollama
     from llama_index.embeddings.ollama import OllamaEmbedding
+    default_backend = "ollama"
+    import subprocess
+    subprocess.Popen(["ollama", "serve"])
 except ImportError:
     print("ollama not installed, using HuggingFace LLM instead")
 
@@ -55,53 +64,16 @@ class BasicRagWorkflow:
         """
         self.vector_db = chromadb.PersistentClient("chromadb")
 
-        self.embed_model = HuggingFaceEmbedding(
-            model_name="Snowflake/snowflake-arctic-embed-l",
-            trust_remote_code=True,
-            device="cuda" if torch.cuda.is_available() else "cpu",
-        )
+        Settings.embed_model = self.get_embed_model()
 
         self.system_prompt = "You are a Q&A assistant. Your goal is to answer questions as accurately as possible based on the instructions and context provided. the answer should be only based on the given context, if no acceptable context respond as not found on given context"
 
-        self.llm = HuggingFaceLLM(
-            context_window=4096,
-            max_new_tokens=1048,
-            generate_kwargs={"temperature": 0, "do_sample": False},
-            system_prompt=self.system_prompt,
-            # query_wrapper_prompt=qa_prompt_tmpl,
-            tokenizer_name="microsoft/Phi-3-mini-128k-instruct",
-            model_name="microsoft/Phi-3-mini-128k-instruct",
-            device_map="auto" if torch.cuda.is_available() else "cpu",
-            tokenizer_kwargs={
-                "max_length": 4096,
-                "trust_remote_code": True,
-            },
-            # uncomment this if using CUDA to reduce memory usage
-            model_kwargs=(
-                {
-                    "torch_dtype": torch.float16,
-                    "llm_int8_enable_fp32_cpu_offload": True,
-                    "bnb_4bit_quant_type": "nf4",
-                    "bnb_4bit_use_double_quant": True,
-                    "bnb_4bit_compute_dtype": torch.bfloat16,
-                    "load_in_4bit": True,
-                    "trust_remote_code": True,
-                }
-                if torch.cuda.is_available()
-                else {
-                    "trust_remote_code": True,
-                }
-            ),
-        )
+        Settings.llm = self.get_default_llm()
 
-        self.splitter = SemanticSplitterNodeParser(
+        Settings.node_parser = SemanticSplitterNodeParser(
             buffer_size=1,
             breakpoint_percentile_threshold=95,
-            embed_model=self.embed_model,
-        )
-
-        self.service_context = ServiceContext.from_defaults(
-            embed_model=self.embed_model, node_parser=self.splitter, llm=self.llm
+            embed_model=Settings.embed_model
         )
 
         self.retriver_top_k = 5
@@ -118,7 +90,6 @@ class BasicRagWorkflow:
             )
             self.vector_store_index = VectorStoreIndex.from_vector_store(
                 vector_store=self.vector_store,
-                service_context=self.service_context,
                 storage_context=self.storage_context,
             )
             self.query_engine = self.vector_store_index.as_query_engine(
@@ -131,6 +102,85 @@ class BasicRagWorkflow:
             self.storage_context = StorageContext.from_defaults(
                 vector_store=self.vector_store
             )
+    
+    def get_embed_model(self):
+        if default_backend == "ollama":
+            print(
+                    "Downloading LLM from Ollama:",
+                    os.system(f"ollama pull snowflake-arctic-embed"),
+                )
+            return OllamaEmbedding(model_name="snowflake-arctic-embed")
+        else:
+            return HuggingFaceEmbedding(
+                model_name="Snowflake/snowflake-arctic-embed-l",
+                trust_remote_code=True,
+                device="cuda" if torch.cuda.is_available() else "cpu",
+            )
+    
+    def get_default_llm(self):
+        if default_backend == "ollama":
+            print(
+                    "Downloading LLM from Ollama:",
+                    os.system(f"ollama pull phi3"),
+                )
+            return Ollama(
+                model="phi3", 
+                request_timeout=300.0,
+                temperature=0.0,
+                context_window=4096,
+                system=self.system_prompt,
+            )
+        elif default_backend == "llamacpp":
+            return LlamaCPP(
+                # You can pass in the URL to a GGML model to download it automatically
+                model_url=llamacpp_model_url(""),
+                # optionally, you can set the path to a pre-downloaded model instead of model_url
+                # model_path=f"llama_models/{model_url.split('/')[-1]}",
+                temperature=0.0,
+                max_new_tokens=1048,
+                # llama2 has a context window of 4096 tokens, but we set it lower to allow for some wiggle room
+                context_window=4096,
+                # kwargs to pass to __call__()
+                generate_kwargs={},
+                # kwargs to pass to __init__()
+                # set to at least 1 to use GPU
+                model_kwargs=(
+                    {"n_gpu_layers": -1} if torch.cuda.is_available() else {}
+                ),
+                # transform inputs into Llama2 format
+                verbose=False,
+            ) 
+        else:
+            return HuggingFaceLLM(
+                context_window=4096,
+                max_new_tokens=1048,
+                generate_kwargs={"temperature": 0, "do_sample": False},
+                system_prompt=self.system_prompt,
+                # query_wrapper_prompt=qa_prompt_tmpl,
+                tokenizer_name="microsoft/Phi-3-mini-128k-instruct",
+                model_name="microsoft/Phi-3-mini-128k-instruct",
+                device_map="auto" if torch.cuda.is_available() else "cpu",
+                tokenizer_kwargs={
+                    "max_length": 4096,
+                    "trust_remote_code": True,
+                },
+                # uncomment this if using CUDA to reduce memory usage
+                model_kwargs=(
+                    {
+                        "torch_dtype": torch.float16,
+                        "llm_int8_enable_fp32_cpu_offload": True,
+                        "bnb_4bit_quant_type": "nf4",
+                        "bnb_4bit_use_double_quant": True,
+                        "bnb_4bit_compute_dtype": torch.bfloat16,
+                        "load_in_4bit": True,
+                        "trust_remote_code": True,
+                    }
+                    if torch.cuda.is_available()
+                    else {
+                        "trust_remote_code": True,
+                    }
+                ),
+            ) 
 
     def get_db_collections(self, vector_db_name: str):
         """
@@ -195,8 +245,8 @@ class BasicRagWorkflow:
                 "llama3-8b",
             ],
             "ollama": [
-                "llama3",
                 "phi3",
+                "llama3",
                 "mistral",
                 "neural-chat",
                 "starling-lm",
@@ -253,7 +303,7 @@ class BasicRagWorkflow:
         if basic_settings.embed_model_provider == "huggingface":
             if basic_settings.embed_model != "Snowflake/snowflake-arctic-embed-l":
                 setting_changed = True
-                self.embed_model = HuggingFaceEmbedding(
+                Settings.embed_model = HuggingFaceEmbedding(
                     model_name=basic_settings.embed_model,
                     trust_remote_code=True,
                     device="cuda" if torch.cuda.is_available() else "cpu",
@@ -264,7 +314,7 @@ class BasicRagWorkflow:
                 "Downloading Embed model",
                 os.system(f"ollama pull {basic_settings.embed_model}"),
             )
-            self.embed_model = OllamaEmbedding(model_name=basic_settings.embed_model)
+            Settings.embed_model = OllamaEmbedding(model_name=basic_settings.embed_model)
         else:
             return HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -275,7 +325,7 @@ class BasicRagWorkflow:
         if basic_settings.llm_provider != "huggingface":
             setting_changed = True
             if basic_settings.llm_provider == "llamacpp":
-                self.llm = LlamaCPP(
+                Settings.llm = LlamaCPP(
                     # You can pass in the URL to a GGML model to download it automatically
                     model_url=llamacpp_model_url(basic_settings.llm),
                     # optionally, you can set the path to a pre-downloaded model instead of model_url
@@ -292,8 +342,6 @@ class BasicRagWorkflow:
                         {"n_gpu_layers": -1} if torch.cuda.is_available() else {}
                     ),
                     # transform inputs into Llama2 format
-                    messages_to_prompt=messages_to_prompt,
-                    completion_to_prompt=completion_to_prompt,
                     verbose=False,
                 )
                 set_global_tokenizer(
@@ -306,16 +354,21 @@ class BasicRagWorkflow:
                     "Downloading LLM from Ollama:",
                     os.system(f"ollama pull {basic_settings.llm}"),
                 )
-                self.llm = Ollama(model=basic_settings.llm, request_timeout=300.0)
+                Settings.llm = Ollama(
+                    model=basic_settings.llm, 
+                    request_timeout=300.0,
+                    temperature=0.0,
+                    context_window=4096,
+                    system=self.system_prompt,
+                )
         else:
             if basic_settings.llm != "microsoft/Phi-3-mini-128k-instruct":
                 setting_changed = True
-                self.llm = HuggingFaceLLM(
+                Settings.llm = HuggingFaceLLM(
                     context_window=4096,
                     max_new_tokens=1048,
                     generate_kwargs={"temperature": 0, "do_sample": False},
                     system_prompt=self.system_prompt,
-                    # query_wrapper_prompt=qa_prompt_tmpl,
                     tokenizer_name=basic_settings.llm,
                     model_name=basic_settings.llm,
                     device_map="auto" if torch.cuda.is_available() else "cpu",
@@ -323,7 +376,6 @@ class BasicRagWorkflow:
                         "max_length": 4096,
                         "trust_remote_code": True,
                     },
-                    # uncomment this if using CUDA to reduce memory usage
                     model_kwargs=(
                         {
                             "torch_dtype": torch.float16,
@@ -354,7 +406,7 @@ class BasicRagWorkflow:
             or basic_settings.semantic_splitting_breakpoint_percentile_threshold != 95
         ):
             setting_changed = True
-            self.splitter = SemanticSplitterNodeParser(
+            Settings.node_parser = SemanticSplitterNodeParser(
                 buffer_size=basic_settings.semantic_splitting_buffer_size,
                 breakpoint_percentile_threshold=basic_settings.semantic_splitting_breakpoint_percentile_threshold,
                 embed_model=self.embed_model,
@@ -372,9 +424,6 @@ class BasicRagWorkflow:
             self.vector_store = ChromaVectorStore(self.chroma_collection)
             self.storage_context = StorageContext.from_defaults(
                 vector_store=self.vector_store
-            )
-            self.service_context = ServiceContext.from_defaults(
-                embed_model=self.embed_model, node_parser=self.splitter, llm=self.llm
             )
 
     def document_indexing(self, file_paths: List[str], num_workers: int = cpu_count()):
@@ -394,7 +443,7 @@ class BasicRagWorkflow:
         self.vector_store_index = VectorStoreIndex.from_documents(
             docs,
             storage_context=self.storage_context,
-            service_context=self.service_context,
+            # service_context=self.service_context,
         )
 
         self.query_engine = self.vector_store_index.as_query_engine(
