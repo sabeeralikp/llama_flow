@@ -357,36 +357,35 @@ class BasicRagWorkflow:
                 system=self.system_prompt,
             )
         else:
-            if basic_settings.llm != "microsoft/Phi-3-mini-128k-instruct":
-                setting_changed = True
-                Settings.llm = HuggingFaceLLM(
-                    context_window=4096,
-                    max_new_tokens=1048,
-                    generate_kwargs={"temperature": 0, "do_sample": False},
-                    system_prompt=self.system_prompt,
-                    tokenizer_name=basic_settings.llm,
-                    model_name=basic_settings.llm,
-                    device_map="auto" if torch.cuda.is_available() else "cpu",
-                    tokenizer_kwargs={
-                        "max_length": 4096,
+            setting_changed = True
+            Settings.llm = HuggingFaceLLM(
+                context_window=4096,
+                max_new_tokens=1048,
+                generate_kwargs={"temperature": 0, "do_sample": False},
+                system_prompt=self.system_prompt,
+                tokenizer_name=basic_settings.llm,
+                model_name=basic_settings.llm,
+                device_map="auto" if torch.cuda.is_available() else "cpu",
+                tokenizer_kwargs={
+                    "max_length": 4096,
+                    "trust_remote_code": True,
+                },
+                model_kwargs=(
+                    {
+                        "torch_dtype": torch.float16,
+                        "llm_int8_enable_fp32_cpu_offload": True,
+                        "bnb_4bit_quant_type": "nf4",
+                        "bnb_4bit_use_double_quant": True,
+                        "bnb_4bit_compute_dtype": torch.bfloat16,
+                        "load_in_4bit": True,
                         "trust_remote_code": True,
-                    },
-                    model_kwargs=(
-                        {
-                            "torch_dtype": torch.float16,
-                            "llm_int8_enable_fp32_cpu_offload": True,
-                            "bnb_4bit_quant_type": "nf4",
-                            "bnb_4bit_use_double_quant": True,
-                            "bnb_4bit_compute_dtype": torch.bfloat16,
-                            "load_in_4bit": True,
-                            "trust_remote_code": True,
-                        }
-                        if torch.cuda.is_available() and basic_settings.load_in_4bit
-                        else {
-                            "trust_remote_code": True,
-                        }
-                    ),
-                )
+                    }
+                    if torch.cuda.is_available() and basic_settings.load_in_4bit
+                    else {
+                        "trust_remote_code": True,
+                    }
+                ),
+            )
             # if basic_settings.load_in_4bit != True:
 
         # TODO: Add more Chunking Strategy
