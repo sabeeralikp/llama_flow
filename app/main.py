@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Response, UploadFile, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
-from basic_rag_workflow.basic_rag_worflow import BasicRagWorkflow
+from basic_rag_workflow.basic_rag_worflow import BasicRagWorkflow, default_backend
 from typing import List
 from schema import BaseChatBotBaseModel, BaseRAGModel
 import aiofiles
