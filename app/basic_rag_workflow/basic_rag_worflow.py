@@ -9,7 +9,7 @@ from llama_index.core import (
     StorageContext,
     ServiceContext,
     VectorStoreIndex,
-    Settings
+    Settings,
 )
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.vector_stores.chroma import ChromaVectorStore
@@ -35,6 +35,7 @@ try:
     from transformers import AutoTokenizer
     from urllib.request import urlretrieve
     import os
+
     default_backend = "llamacpp"
 except ImportError:
     print("llama_cpp not installed, using other alternatives")
@@ -43,8 +44,10 @@ except ImportError:
 try:
     from llama_index.llms.ollama import Ollama
     from llama_index.embeddings.ollama import OllamaEmbedding
+
     default_backend = "ollama"
     import subprocess
+
     subprocess.Popen(["ollama", "serve"])
 except ImportError:
     print("ollama not installed, using HuggingFace LLM instead")
@@ -73,7 +76,7 @@ class BasicRagWorkflow:
         Settings.node_parser = SemanticSplitterNodeParser(
             buffer_size=1,
             breakpoint_percentile_threshold=95,
-            embed_model=Settings.embed_model
+            embed_model=Settings.embed_model,
         )
 
         self.retriver_top_k = 5
@@ -102,13 +105,13 @@ class BasicRagWorkflow:
             self.storage_context = StorageContext.from_defaults(
                 vector_store=self.vector_store
             )
-    
+
     def get_embed_model(self):
         if default_backend == "ollama":
             print(
-                    "Downloading LLM from Ollama:",
-                    os.system(f"ollama pull snowflake-arctic-embed"),
-                )
+                "Downloading LLM from Ollama:",
+                os.system(f"ollama pull snowflake-arctic-embed"),
+            )
             return OllamaEmbedding(model_name="snowflake-arctic-embed")
         else:
             return HuggingFaceEmbedding(
@@ -116,15 +119,15 @@ class BasicRagWorkflow:
                 trust_remote_code=True,
                 device="cuda" if torch.cuda.is_available() else "cpu",
             )
-    
+
     def get_default_llm(self):
         if default_backend == "ollama":
             print(
-                    "Downloading LLM from Ollama:",
-                    os.system(f"ollama pull phi3"),
-                )
+                "Downloading LLM from Ollama:",
+                os.system(f"ollama pull phi3"),
+            )
             return Ollama(
-                model="phi3", 
+                model="phi3",
                 request_timeout=300.0,
                 temperature=0.0,
                 context_window=4096,
@@ -149,7 +152,7 @@ class BasicRagWorkflow:
                 ),
                 # transform inputs into Llama2 format
                 verbose=False,
-            ) 
+            )
         else:
             return HuggingFaceLLM(
                 context_window=4096,
@@ -180,7 +183,7 @@ class BasicRagWorkflow:
                         "trust_remote_code": True,
                     }
                 ),
-            ) 
+            )
 
     def get_db_collections(self, vector_db_name: str):
         """
@@ -314,7 +317,9 @@ class BasicRagWorkflow:
                 "Downloading Embed model",
                 os.system(f"ollama pull {basic_settings.embed_model}"),
             )
-            Settings.embed_model = OllamaEmbedding(model_name=basic_settings.embed_model)
+            Settings.embed_model = OllamaEmbedding(
+                model_name=basic_settings.embed_model
+            )
         else:
             return HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -322,45 +327,35 @@ class BasicRagWorkflow:
             )
 
         # TODO: Plug and Play different LLM Provider and its Settings and Embedding Models
-        if basic_settings.llm_provider != "huggingface":
+        if basic_settings.llm_provider == "llamacpp":
             setting_changed = True
-            if basic_settings.llm_provider == "llamacpp":
-                Settings.llm = LlamaCPP(
-                    # You can pass in the URL to a GGML model to download it automatically
-                    model_url=llamacpp_model_url(basic_settings.llm),
-                    # optionally, you can set the path to a pre-downloaded model instead of model_url
-                    # model_path=f"llama_models/{model_url.split('/')[-1]}",
-                    temperature=0.0,
-                    max_new_tokens=1048,
-                    # llama2 has a context window of 4096 tokens, but we set it lower to allow for some wiggle room
-                    context_window=4096,
-                    # kwargs to pass to __call__()
-                    generate_kwargs={},
-                    # kwargs to pass to __init__()
-                    # set to at least 1 to use GPU
-                    model_kwargs=(
-                        {"n_gpu_layers": -1} if torch.cuda.is_available() else {}
-                    ),
-                    # transform inputs into Llama2 format
-                    verbose=False,
-                )
-                set_global_tokenizer(
-                    AutoTokenizer.from_pretrained(
-                        "NousResearch/Llama-2-7b-chat-hf"
-                    ).encode
-                )
-            if basic_settings.llm_provider == "ollama":
-                print(
-                    "Downloading LLM from Ollama:",
-                    os.system(f"ollama pull {basic_settings.llm}"),
-                )
-                Settings.llm = Ollama(
-                    model=basic_settings.llm, 
-                    request_timeout=300.0,
-                    temperature=0.0,
-                    context_window=4096,
-                    system=self.system_prompt,
-                )
+            Settings.llm = LlamaCPP(
+                model_url=llamacpp_model_url(basic_settings.llm),
+                temperature=0.0,
+                max_new_tokens=1048,
+                context_window=4096,
+                generate_kwargs={},
+                model_kwargs=(
+                    {"n_gpu_layers": -1} if torch.cuda.is_available() else {}
+                ),
+                verbose=False,
+            )
+            set_global_tokenizer(
+                AutoTokenizer.from_pretrained("NousResearch/Llama-2-7b-chat-hf").encode
+            )
+        elif basic_settings.llm_provider == "ollama":
+            setting_changed = True
+            print(
+                "Downloading LLM from Ollama:",
+                os.system(f"ollama pull {basic_settings.llm}"),
+            )
+            Settings.llm = Ollama(
+                model=basic_settings.llm,
+                request_timeout=300.0,
+                temperature=0.0,
+                context_window=4096,
+                system=self.system_prompt,
+            )
         else:
             if basic_settings.llm != "microsoft/Phi-3-mini-128k-instruct":
                 setting_changed = True

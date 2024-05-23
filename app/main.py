@@ -39,16 +39,32 @@ def get_db():
     finally:
         db.close()
 
+
 # Function to set initial settings for the application
 def setSettings():
+    print(default_backend)
     base_dict = basic.get_basic_settings()
     base_rag_model = BaseRAGModel(
         vector_db=base_dict["vector_db"][0],
         vector_db_collection=base_dict["vector_db_collection"],
-        embed_model_provider=base_dict["embed_model_provider"][0],
-        embed_model=base_dict["embed_model"][0],
-        llm_provider=base_dict["llm_provider"][0],
-        llm=base_dict["huggingface_llm"][0],
+        embed_model_provider=(
+            "ollama" if default_backend == "ollama" else "huggingface"
+        ),
+        embed_model=(
+            base_dict["ollama_embed_models"][0]
+            if default_backend == "ollama"
+            else base_dict["embed_model"][0]
+        ),
+        llm_provider=default_backend,
+        llm=(
+            base_dict["ollama"][0]
+            if default_backend == "ollama"
+            else (
+                base_dict["llama_cpp"][0]
+                if default_backend == "llamacpp"
+                else base_dict["huggingface_llm"][0]
+            )
+        ),
         load_in_4bit=base_dict["load_in_4bit"],
         chunking_strategy=base_dict["chunking_strategy"][0],
         semantic_splitting_buffer_size=base_dict["semantic-splitting"]["buffer_size"],
@@ -62,6 +78,7 @@ def setSettings():
         crud.create_base_model_settings(db=db, base_rag_settingsModel=base_rag_model)
     finally:
         db.close()
+
 
 # Set initial settings when the application starts
 setSettings()
