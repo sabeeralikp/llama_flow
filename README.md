@@ -28,7 +28,7 @@
 
 ### 🖥️ Frontend
 - Built with **[Flutter](https://flutter.dev/)**
-- Available for **[Linux](https://github.com/sabeeralikp/llama_flow/releases/download/Desktop-1.0.1/llama_flow-1.0.1+2-linux.deb)** and **[Windows](https://github.com/sabeeralikp/llama_flow/releases/download/Desktop-1.0.1/llama_flow-1.0.1+2-windows-setup.exe)**
+- Available for **[Linux (Debian](https://github.com/sabeeralikp/llama_flow/releases/download/Desktop-1.0.1/llama_flow-1.0.1+2-linux.deb)** and **[Windows](https://github.com/sabeeralikp/llama_flow/releases/download/Desktop-1.0.1/llama_flow-1.0.1+2-windows-setup.exe)**
 - Source Code: [llama_flow_desktop](https://github.com/sabeeralikp/llama_flow_desktop)
 
 ### 🛠️ Backend
@@ -136,8 +136,8 @@
 
 ### 1. Frontend UI Application
 Download the desktop application for your OS:
-- [Linux](https://github.com/sabeeralikp/llama_flow/releases/download/linux-desktop-1.0.1/llama_flow-1.0.1+2-linux.deb)
-- [Windows](https://github.com/sabeeralikp/llama_flow/releases/download/linux-desktop-1.0.1/llama_flow-1.0.1+2-windows-setup.exe)
+- [Linux](https://github.com/sabeeralikp/llama_flow/releases/download/Desktop-1.0.1/llama_flow-1.0.1+2-linux.deb)
+- [Windows](https://github.com/sabeeralikp/llama_flow/releases/download/Desktop-1.0.1/llama_flow-1.0.1+2-windows-setup.exe)
 
 ### 2. Backend Configuration
 
@@ -170,7 +170,8 @@ Download the desktop application for your OS:
    ```
 4. **Run the backend with Uvicorn**
    ```sh
-   uvicorn main:app --workers 4
+   cd app
+   uvicorn main:app --port 8000
    ```
 
 #### Option 3: Colab/Kaggle Notebooks
