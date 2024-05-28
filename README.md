@@ -35,6 +35,10 @@
 - Dockerized for local hosting
 - Utilizes **[FastAPI](https://fastapi.tiangolo.com/)** and **[llama_index](https://github.com/run-llama/llama_index)**
 
+## See it in action
+
+<img src="https://github.com/sabeeralikp/llama_flow/blob/main/images/video.gif?raw=true" alt="llama_flow Demo">
+
 ### Supported Components
 
 #### Basic RAG Workflow
