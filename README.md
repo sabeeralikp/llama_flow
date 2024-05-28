@@ -37,7 +37,7 @@
 
 ## See it in action
 
-<img src="https://github.com/sabeeralikp/llama_flow/blob/main/images/video.gif?raw=true" alt="llama_flow Demo">
+<img src="images/video.gif?raw=true" alt="llama_flow Demo">
 
 ### Supported Components
 
