@@ -24,6 +24,10 @@
 
 **llama_flow** is an open-source application designed to develop and customize Retrieval-Augmented Generation (RAG) workflows **without code**. Easily run it locally using a variety of open-source and closed-source large language models, vector databases, embedding models, and chunking strategies.
 
+## See it in action
+
+<img src="images/video.gif?raw=true" alt="llama_flow Demo">
+
 ## 🚀 Features
 
 ### 🖥️ Frontend
